@@ -3,11 +3,11 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Freely with No Boundaries · Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Photobooths Map</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
   <style>
     #map {
@@ -38,548 +38,106 @@
 
 <body>
 
-  <header class="site-header">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="index.html">Home</a>
-        <a class="navbar-brand" href="map2.html">Map</a>
-      </div>
-    </nav>
-  </header>
-
-  <main class="container text-center">
-    <section>
-      <h1>Places With Photobooths in Montreal</h1>
-      <p>Zoom, click, explore any location that has a working photobooth.</p>
-      <div class="color-legend" style="text-align: left;">
-        <h2>Color Meanings</h2>
-        <ul style="list-style:none; padding:0;">
-          <li><span style="color:red; font-weight:bold;">Red</span> = Multi-Land Use Areas</li>
-          <li><span style="color:blue; font-weight:bold;">Blue</span> = Bird Sanctuaries</li>
-          <li><span style="color:green; font-weight:bold;">Green</span> = National Parks</li>
-          <li><span style="color:purple; font-weight:bold;">purple</span> = Provincial Parks</li>
-          <li><span style="color:pink; font-weight:bold;">pink</span> = Proposed Usage Areas</li>
-          <li><span style="color:orange; font-weight:bold;">orange</span> = Environmental Reserves</li>
-        </ul>
-      </div>
-      <div id="map"></div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <p>© 2026 Sydney's site.</p>
+<header>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">Home</a>
+      <a class="navbar-brand" href="map2.html">Map</a>
     </div>
-  </footer>
+  </nav>
+</header>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<main class="container text-center">
+  <h1>Places With Photobooths in Montreal</h1>
+  <p>Click a camera icon to explore details.</p>
+  <div id="map"></div>
+</main>
 
-  <script>
-    // ------------------------------------------------------------
-    // Initialize map
-    // ------------------------------------------------------------
-    var map = L.map('map', {
-    minZoom: 3,   // prevents zooming too far out
-    maxZoom: 18,  // optional
-    maxBounds: [
-        [85, -170],   // north-west corner (top-left of Canada region)
-        [40, -40]     // south-east corner (bottom-right of Canada region)
-    ],
-    maxBoundsViscosity: 0.7  // adds smooth snap-back effect
-    }).setView([69.4267, -88.5938], 3);  // adjusted zoom to match minZoom
+<footer class="container">
+  <p>© 2026 Sydney's site.</p>
+</footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // ------------------------------------------------------------
-    // Hover + tooltip handler
-    // ------------------------------------------------------------
-function attachEvents(feature, layer) {
-  // Build tooltip
-  let tooltipContent = "";
-  for (const key in feature.properties) {
-    tooltipContent += `<strong>${key}</strong>: ${feature.properties[key]}<br>`;
-  }
-  layer.bindTooltip(tooltipContent, { sticky: true });
-
-  // Save original style
-  const originalStyle = {
-    color: layer.options.color || "#3388ff",
-    weight: layer.options.weight || 2,
-    fillOpacity: layer.options.fillOpacity || 0.3
-  };
-
-  // Hover events
-  layer.on({
-    mouseover: function (e) {
-      e.target.setStyle({
-        color: 'yellow',
-        weight: 3,
-        fillOpacity: 0.6
-      });
-
-      // Bring to front for clarity (optional)
-      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        e.target.bringToFront();
-      }
-    }, 
-    mouseout: function (e) {
-      e.target.setStyle(originalStyle);  // restore original polygon style
-    }
-  });
-}
-    
-
-    // ------------------------------------------------------------
-    // BC
-    // ------------------------------------------------------------
-  var bcFiles = [
-    "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/mount_revelstoke_national_park_of_canada_LAST.geojson",
-  ];
-
-  var bcColors = ["green"];
-
-  var bcLayer = L.layerGroup();
-  bcFiles.forEach((url, index) => {
-    fetch(url)
-      .then(r => r.json())
-      .then(data => {
-        bcLayer.addLayer(L.geoJSON(data, {
-          style: {
-            color: bcColors[index],
-            weight: 2,
-            fillOpacity: 0.3
-          },
-          onEachFeature: attachEvents
-        }));
-      });
-  });
-
-  var overlayLayers = {};
-  var baseLayers = {
-    "Street": street
-  };
-  var layerControl = L.control.layers(baseLayers, overlayLayers).addTo(map);
-  window.layerControl = layerControl;
-
-  overlayLayers["British Columbia"] = bcLayer;
-  layerControl.addOverlay(bcLayer, "British Columbia");
-
-    // ------------------------------------------------------------
-    // Yukon
-    // ------------------------------------------------------------
-    var ykFiles = [
-      "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/vuntut_national_park_of_canada_filtered_final.geojson"
-    ];
-    
-    var ykColors = ["green", "green"];  
-    
-    var ykLayer = L.layerGroup();
-    
-    ykFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: ykColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          ykLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading Yukon GeoJSON:", url, err));
-    });
-    
-    overlayLayers["Yukon"] = ykLayer;
-    if (window.layerControl) window.layerControl.addOverlay(ykLayer, "Yukon");
-    
-    // ------------------------------------------------------------
-    // Nunavut
-    // ------------------------------------------------------------
-    var nuFiles = [
-      "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/MAdministrative8_FeaturesToJSO_LAST.geojson"
-    ];
-    
-    var nuColors = ["green"];  
-    
-    var nuLayer = L.layerGroup();
-    
-    nuFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: nuColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          nuLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading Nunavut GeoJSON:", url, err));
-    });
-    
-    overlayLayers["Nunavut"] = nuLayer;
-    if (window.layerControl) window.layerControl.addOverlay(nuLayer, "Nunavut");
-
-
-    // ------------------------------------------------------------
-    // NL
-    // ------------------------------------------------------------
-  var nlFiles = [
-    "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/gros_morne_national_park_of_canada_LAST.geojson"
-  ];
-
-  var nlColors = ["green"];
-
-  var nlLayer = L.layerGroup();
-  nlFiles.forEach((url, index) => {
-    fetch(url)
-      .then(r => r.json())
-      .then(data => {
-        nlLayer.addLayer(L.geoJSON(data, {
-          style: {
-            color: nlColors[index],
-            weight: 2,
-            fillOpacity: 0.3
-          },
-          onEachFeature: attachEvents
-        }));
-      });
-  });
-
-  overlayLayers["Newfoundland and Labrador"] = nlLayer;
-  layerControl.addOverlay(nlLayer, "Newfoundland and Labrador");
-
-
-    // ------------------------------------------------------------
-    // NWT
-    // ------------------------------------------------------------
-    var nwtFiles = [
-      "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/Administrative33_FeaturesToJSO_filtered_final.geojson"
-    ];
-    
-    var nwtColors = ["green"];  
-    
-    var nwtLayer = L.layerGroup();
-    
-    nwtFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: nwtColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          nwtLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading Northwest Territories GeoJSON:", url, err));
-    });
-    
-    overlayLayers["Northwest Territories"] = nwtLayer;
-    if (window.layerControl) window.layerControl.addOverlay(nwtLayer, "Northwest Territories");
-    
-    // ------------------------------------------------------------
-    // Manitoba
-    // ------------------------------------------------------------
-  var mbFiles = [
-    "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/Manitoba_Parks_Filtered_final_LAST.geojson"
-  ];
-
-  var mbColors = ["purple"];  // FIXED
-
-  var mbLayer = L.layerGroup();
-  mbFiles.forEach((url, index) => {
-    fetch(url)
-      .then(r => r.json())
-      .then(data => {
-        mbLayer.addLayer(L.geoJSON(data, {
-          style: {
-            color: mbColors[index],
-            weight: 2,
-            fillOpacity: 0.3
-          },
-          onEachFeature: attachEvents
-        }));
-      });
-  });
-
-  overlayLayers["Manitoba"] = mbLayer;
-  layerControl.addOverlay(mbLayer, "Manitoba");
-
-    // ------------------------------------------------------------
-    // Quebec (two files → one layer)
-    // ------------------------------------------------------------
-    var quebecFiles = [
-      "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/Biodiversity_reserve_LAST.geojson"
-    ];
-
-// Assign a color for each file (in the same order)
-    var quebecColors = ["orange"];  
-    
-    var quebecLayer = L.layerGroup();
-    
-    quebecFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: quebecColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          quebecLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading Quebec GeoJSON:", url, err));
-    });
-    
-    overlayLayers["Quebec"] = quebecLayer;
-    if (window.layerControl) window.layerControl.addOverlay(quebecLayer, "Quebec");
-    // ------------------------------------------------------------
-    // Saskatchewan
-    // ------------------------------------------------------------
-  var skFiles = [
-    "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/Historic_Site_SK_LAST.geojson"
-  ];
-
-  var skColors = ["red"];  // FIXED
-
-  var skLayer = L.layerGroup();
-  skFiles.forEach((url, index) => {
-    fetch(url)
-      .then(r => r.json())
-      .then(data => {
-        skLayer.addLayer(L.geoJSON(data, {
-          style: {
-            color: skColors[index],
-            weight: 2,
-            fillOpacity: 0.3
-          },
-          onEachFeature: attachEvents
-        }));
-      });
-  });
-
-  overlayLayers["Saskatchewan"] = skLayer;
-  layerControl.addOverlay(skLayer, "Saskatchewan");
-    
-    // ------------------------------------------------------------
-    // Prince Edward Island
-    // ------------------------------------------------------------
-    var peiFiles = [
-      "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/pei_prov_parks_finaL_last.geojson"
-    
-    var peiColors = ["purple"];  
-    
-    var peiLayer = L.layerGroup();
-    
-    peiFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: peiColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          peiLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading Prince Edward Island GeoJSON:", url, err));
-    });
-    
-    overlayLayers["Prince Edward Island"] = peiLayer;
-    if (window.layerControl) window.layerControl.addOverlay(peiLayer, "Prince Edward Island");
-
-    // ------------------------------------------------------------
-    // Ontario (multiple files → one layer)
-    // ------------------------------------------------------------
-  var ontarioFiles = [
-    "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/wilderness_areas_final_last_LAST.geojson"
-  ];
-
-  var ontarioColors = ["red"];  // FIXED
-
-  var ontarioLayer = L.layerGroup();
-  ontarioFiles.forEach((url, index) => {
-    fetch(url)
-      .then(r => r.json())
-      .then(data => {
-        ontarioLayer.addLayer(L.geoJSON(data, {
-          style: {
-            color: ontarioColors[index],
-            weight: 2,
-            fillOpacity: 0.3
-          },
-          onEachFeature: attachEvents
-        }));
-      });
-  });
-
-  overlayLayers["Ontario"] = ontarioLayer;  // FIXED
-  layerControl.addOverlay(ontarioLayer, "Ontario");
-    // ------------------------------------------------------------
-    // Nova Scotia
-    // ------------------------------------------------------------
-    var nsFiles = [
-      "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/ns_provincial_parks_final.geojson"
-    ];
-    
-    var nsColors = ["purple"];  
-    
-    var nsLayer = L.layerGroup();
-    
-    nsFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: nsColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          nsLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading Nova Scotia GeoJSON:", url, err));
-    });
-    
-    overlayLayers["Nova Scotia"] = nsLayer;
-    if (window.layerControl) window.layerControl.addOverlay(nsLayer, "Nova Scotia");
-
-    // ------------------------------------------------------------
-    // New Brunswick
-    // ------------------------------------------------------------
-    var nbFiles = [
-      "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/nb_prov_parks_final.geojson"
-    ];
-    
-    var nbColors = ["purple"];  
-    
-    var nbLayer = L.layerGroup();
-    
-    nbFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: nbColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          nbLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading New Brunswick GeoJSON:", url, err));
-    });
-    
-    overlayLayers["New Brunswick"] = nbLayer;
-    if (window.layerControl) window.layerControl.addOverlay(nbLayer, "New Brunswick");
-
-     // ------------------------------------------------------------
-   // Alberta
+<script>
   // ------------------------------------------------------------
-    var abFiles = [
-      "https://raw.githubusercontent.com/sreymon/464WEBSITE2/refs/heads/main/wood_buffalo_national_park_of_canada_LAST.geojson"
-    ];
-    
-    var abColors = ["green"];  
-    
-    var abLayer = L.layerGroup();
-    
-    abFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: abColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          abLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading Alberta GeoJSON:", url, err));
-    });
-    
-    overlayLayers["Alberta"] = abLayer;
-    if (window.layerControl) window.layerControl.addOverlay(abLayer, "Alberta");
+  // Initialize map
+  // ------------------------------------------------------------
+  var map = L.map('map', {
+    minZoom: 10,
+    maxZoom: 18
+  }).setView([45.520249, -73.640291], 12);
 
-    
-    // ------------------------------------------------------------
-    // National Parks
-    // ------------------------------------------------------------
-    // ------------------------------------------------------------
-    var natparkFiles = [
-      "https://github.com/sreymon/464WEBSITE1/blob/main/FEDparksFINAL.geojson"
-    ];
-    
-    var natparkColors = ["green"];  
-    
-    var natparkLayer = L.layerGroup();
-    
-    natparkFiles.forEach((url, index) => {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {
-            style: {
-              color: natparkColors[index],   // <-- Different color per file
-              weight: 2,
-              fillOpacity: 0.3
-            },
-            onEachFeature: attachEvents
-          });
-    
-          natparkLayer.addLayer(layer);
-        })
-        .catch(err => console.error("Error loading National Parks GeoJSON:", url, err));
-    });
-    
-    overlayLayers["National Parks"] = natparkLayer;
-    if (window.layerControl) window.layerControl.addOverlay(natparkLayer, "National Parks");
+  var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
 
-    // ------------------------------------------------------------
-    // Click popup
-    // ------------------------------------------------------------
-    map.on('click', function (e) {
-      L.popup()
-        .setLatLng(e.latlng)
-        .setContent(`You clicked at: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`)
-        .openOn(map);
-    });
-  </script>
+  var markerLayer = L.layerGroup().addTo(map);
+
+  // ------------------------------------------------------------
+  // Camera icon
+  // ------------------------------------------------------------
+  var cameraIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/685/685655.png",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+  });
+
+  // ------------------------------------------------------------
+  // CSV (TSV) URL via GitHack to avoid CORS
+  // ------------------------------------------------------------
+  var csvUrl = "https://raw.githack.com/sreymon/photo-booths/main/photobooths.csv";
+
+  fetch(csvUrl)
+    .then(res => res.text())
+    .then(text => {
+      const rows = text.trim().split(/\r?\n/); // handle Windows/Unix line endings
+      const headers = rows[0].split("\t").map(h => h.trim());
+
+      // Find lat/lng columns
+      const latIndex = headers.findIndex(h => h.toLowerCase().includes("lat"));
+      const lngIndex = headers.findIndex(h => h.toLowerCase().includes("lng"));
+
+      rows.slice(1).forEach(row => {
+        const cols = row.split("\t").map(c => c.trim());
+
+        const lat = parseFloat(cols[latIndex]);
+        const lng = parseFloat(cols[lngIndex]);
+
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const marker = L.marker([lat, lng], { icon: cameraIcon }).addTo(markerLayer);
+
+          let popupContent = `<strong>${cols[0] || "Photobooth"}</strong><br><br>`;
+          headers.forEach((header, i) => {
+            if (cols[i]) popupContent += `<strong>${header}</strong> ${cols[i]}<br>`;
+          });
+
+          marker.bindPopup(popupContent);
+          marker.bindTooltip(cols[0], { sticky: true });
+        }
+      });
+    })
+    .catch(err => console.error("CSV load error:", err));
+
+  // ------------------------------------------------------------
+  // Layer control
+  // ------------------------------------------------------------
+  L.control.layers(
+    { "Street": street },
+    { "Photobooths": markerLayer }
+  ).addTo(map);
+
+  // ------------------------------------------------------------
+  // Click coordinate popup
+  // ------------------------------------------------------------
+  map.on('click', function (e) {
+    L.popup()
+      .setLatLng(e.latlng)
+      .setContent(`You clicked at: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`)
+      .openOn(map);
+  });
+</script>
 
 </body>
-
 </html>
