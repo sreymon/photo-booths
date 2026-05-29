@@ -93,14 +93,14 @@
     .then(res => res.text())
     .then(text => {
       const rows = text.trim().split(/\r?\n/); // handle Windows/Unix line endings
-      const headers = rows[0].split("\t").map(h => h.trim());
+      const headers = rows[0].split(",").map(h => h.trim());
 
       // Find lat/lng columns
       const latIndex = headers.findIndex(h => h.toLowerCase().includes("lat"));
       const lngIndex = headers.findIndex(h => h.toLowerCase().includes("lng"));
 
       rows.slice(1).forEach(row => {
-        const cols = row.split("\t").map(c => c.trim());
+        const cols = row.split(",").map(c => c.trim());
 
         const lat = parseFloat(cols[latIndex]);
         const lng = parseFloat(cols[lngIndex]);
