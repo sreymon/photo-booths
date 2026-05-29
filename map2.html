@@ -7,7 +7,11 @@
   <title>Photobooths Map</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 
   <style>
     #map {
@@ -35,6 +39,160 @@
     }
   </style>
 </head>
+
+<body>
+
+<header>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">Home</a>
+      <a class="navbar-brand" href="map2.html">Map</a>
+    </div>
+  </nav>
+</header>
+
+<main class="container text-center">
+  <h1>Places With Photobooths in Montreal</h1>
+  <p>Click a camera icon to explore details.</p>
+
+  <div id="map"></div>
+</main>
+
+<footer class="container">
+  <p>© 2026 Sydney's site.</p>
+</footer>
+
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Papa Parse -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+
+  // ------------------------------------------------------------
+  // Initialize map
+  // ------------------------------------------------------------
+  const map = L.map('map', {
+    minZoom: 10,
+    maxZoom: 18
+  }).setView([45.520249, -73.640291], 12);
+
+  // ------------------------------------------------------------
+  // Base layer
+  // ------------------------------------------------------------
+  const street = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      attribution: '© OpenStreetMap contributors'
+    }
+  ).addTo(map);
+
+  // ------------------------------------------------------------
+  // Marker layer
+  // ------------------------------------------------------------
+  const markerLayer = L.layerGroup().addTo(map);
+
+  // ------------------------------------------------------------
+  // Camera icon
+  // ------------------------------------------------------------
+  const cameraIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149059.png",
+
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+  });
+
+  // ------------------------------------------------------------
+  // CSV URL
+  // ------------------------------------------------------------
+  const csvUrl =
+    "https://raw.githack.com/sreymon/photo-booths/main/photobooths.csv";
+
+  // ------------------------------------------------------------
+  // Parse CSV properly
+  // ------------------------------------------------------------
+  Papa.parse(csvUrl, {
+
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+
+    complete: function(results) {
+
+      console.log(results.data);
+
+      results.data.forEach(row => {
+
+        const lat = parseFloat(row.lat);
+        const lng = parseFloat(row.lng);
+
+        console.log(lat, lng);
+
+        // Only create marker if coordinates are valid
+        if (!isNaN(lat) && !isNaN(lng)) {
+
+          const marker = L.marker(
+            [lat, lng],
+            { icon: cameraIcon }
+          ).addTo(markerLayer);
+
+          // Popup content
+          let popupContent =
+            `<strong>${row.name || "Photobooth"}</strong><br><br>`;
+
+          Object.keys(row).forEach(key => {
+
+            if (row[key]) {
+
+              popupContent +=
+                `<strong>${key}:</strong> ${row[key]}<br>`;
+            }
+          });
+
+          marker.bindPopup(popupContent);
+
+          marker.bindTooltip(
+            row.name || "Photobooth",
+            { sticky: true }
+          );
+        }
+      });
+    },
+
+    error: function(err) {
+      console.error("CSV load error:", err);
+    }
+  });
+
+  // ------------------------------------------------------------
+  // Layer control
+  // ------------------------------------------------------------
+  L.control.layers(
+    { "Street": street },
+    { "Photobooths": markerLayer }
+  ).addTo(map);
+
+  // ------------------------------------------------------------
+  // Click coordinate popup
+  // ------------------------------------------------------------
+  map.on('click', function (e) {
+
+    L.popup()
+      .setLatLng(e.latlng)
+      .setContent(
+        `You clicked at:
+        ${e.latlng.lat.toFixed(4)},
+        ${e.latlng.lng.toFixed(4)}`
+      )
+      .openOn(map);
+  });
+
+</script>
+
+</body>
+</html></head>
 
 <body>
 
