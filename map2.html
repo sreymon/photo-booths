@@ -116,6 +116,7 @@
           const name = (nameIndex >= 0 && cols[nameIndex]) ? cols[nameIndex] : "Photobooth";
           let popupContent = `<strong>${name}</strong><br><br>`;
           headers.forEach((header, i) => {
+            if (i === latIndex || i === lngIndex) return; // hide coordinates
             if (header && cols[i]) popupContent += `<strong>${header}</strong> ${cols[i]}<br>`;
           });
 
