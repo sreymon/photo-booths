@@ -1,4 +1,4 @@
-DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -92,15 +92,20 @@ DOCTYPE html>
   fetch(csvUrl)
     .then(res => res.text())
     .then(text => {
-      const rows = text.trim().split(/\r?\n/); // handle Windows/Unix line endings
-      const headers = rows[0].split("\t").map(h => h.trim());
+      // The file is comma-separated and contains blank rows, so split on commas
+      // and drop any line that has no content.
+      const rows = text.trim().split(/\r?\n/) // handle Windows/Unix line endings
+        .filter(line => line.split(",").some(c => c.trim() !== ""));
 
-      // Find lat/lng columns
+      const headers = rows[0].split(",").map(h => h.trim());
+
+      // Find lat/lng/name columns
       const latIndex = headers.findIndex(h => h.toLowerCase().includes("lat"));
       const lngIndex = headers.findIndex(h => h.toLowerCase().includes("lng"));
+      const nameIndex = headers.findIndex(h => h.toLowerCase().includes("name"));
 
       rows.slice(1).forEach(row => {
-        const cols = row.split("\t").map(c => c.trim());
+        const cols = row.split(",").map(c => c.trim());
 
         const lat = parseFloat(cols[latIndex]);
         const lng = parseFloat(cols[lngIndex]);
@@ -108,13 +113,14 @@ DOCTYPE html>
         if (!isNaN(lat) && !isNaN(lng)) {
           const marker = L.marker([lat, lng], { icon: cameraIcon }).addTo(markerLayer);
 
-          let popupContent = `<strong>${cols[0] || "Photobooth"}</strong><br><br>`;
+          const name = (nameIndex >= 0 && cols[nameIndex]) ? cols[nameIndex] : "Photobooth";
+          let popupContent = `<strong>${name}</strong><br><br>`;
           headers.forEach((header, i) => {
-            if (cols[i]) popupContent += `<strong>${header}</strong> ${cols[i]}<br>`;
+            if (header && cols[i]) popupContent += `<strong>${header}</strong> ${cols[i]}<br>`;
           });
 
           marker.bindPopup(popupContent);
-          marker.bindTooltip(cols[0], { sticky: true });
+          marker.bindTooltip(name, { sticky: true });
         }
       });
     })
