@@ -104,6 +104,8 @@
       const lngIndex = headers.findIndex(h => h.toLowerCase().includes("lng"));
       const nameIndex = headers.findIndex(h => h.toLowerCase().includes("name"));
 
+      const bounds = [];
+
       rows.slice(1).forEach(row => {
         const cols = row.split(",").map(c => c.trim());
 
@@ -112,6 +114,7 @@
 
         if (!isNaN(lat) && !isNaN(lng)) {
           const marker = L.marker([lat, lng], { icon: cameraIcon }).addTo(markerLayer);
+          bounds.push([lat, lng]);
 
           const name = (nameIndex >= 0 && cols[nameIndex]) ? cols[nameIndex] : "Photobooth";
           let popupContent = `<strong>${name}</strong><br><br>`;
@@ -124,6 +127,11 @@
           marker.bindTooltip(name, { sticky: true });
         }
       });
+
+      // Zoom/center the map so every location is visible
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [20, 20] });
+      }
     })
     .catch(err => console.error("CSV load error:", err));
 
